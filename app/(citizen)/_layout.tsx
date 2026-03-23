@@ -1,5 +1,5 @@
 import { Redirect, Stack } from "expo-router";
-import { useAuthStore } from "@/src/store/auth.store";
+import { useAuthStore } from "../../src/store/auth.store";
 
 export default function CitizenLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

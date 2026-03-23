@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { AppQueryProvider } from "@/src/providers/query-provider";
+import { AppQueryProvider } from "../src/providers/query-provider";
 
 export default function RootLayout() {
   return (

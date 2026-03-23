@@ -1,7 +1,21 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
-import { useAuthStore } from "@/src/store/auth.store";
-import { useReportsStore } from "@/src/store/reports.store";
+import {
+  AppButton,
+  EmptyState,
+  FadeInView,
+  HeroCard,
+  MetaRow,
+  ScreenContainer,
+  SectionTitle,
+  StatCard,
+  StatGrid,
+  StatusBadge,
+  SurfaceCard,
+} from "../../src/components/ui";
+import { useAuthStore } from "../../src/store/auth.store";
+import { useReportsStore } from "../../src/store/reports.store";
+import { getCategoryLabel, getStatusLabel } from "../../src/lib/report-utils";
 
 export default function WorkerScreen() {
   const user = useAuthStore((state) => state.user);
@@ -18,70 +32,78 @@ export default function WorkerScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }}>
-      <Text style={{ fontSize: 28, fontWeight: "700" }}>Dashboard profesionála</Text>
-      <Text>Přihlášený uživatel: {user?.name}</Text>
-      <Text>Typ zásahu: těžší případy a černé skládky</Text>
+    <ScreenContainer theme="worker">
+      <FadeInView>
+        <HeroCard
+          theme="worker"
+          eyebrow="Profesionalni panel"
+          title={user?.name ?? "Profesional"}
+          description={`Spravuj tezsi zasahy a cerne skladky. Ve fronte je ${availableReports.length} pripadu.`}
+        />
+      </FadeInView>
+      <FadeInView delay={60}>
+        <StatGrid>
+          <StatCard theme="worker" label="Ve fronte" value={availableReports.length} />
+          <StatCard theme="worker" label="Moje zasahy" value={assignedReports.length} />
+        </StatGrid>
+      </FadeInView>
 
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Čekající profesionální zásahy</Text>
+      <FadeInView delay={120}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="worker">Cekajici profesionalni zasahy</SectionTitle>
         {availableReports.length > 0 ? (
           availableReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>{report.description}</Text>
-              <Text>Status: {report.status}</Text>
-              <Pressable
-                onPress={() => assignReport(report.id, user?.id ?? "", "in_progress")}
-                style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-              >
-                <Text>Převzít profesionální zásah</Text>
-              </Pressable>
-            </View>
+            <SurfaceCard key={report.id} theme="worker">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#17242D" }}>{report.title}</Text>}
+                right={<StatusBadge theme="worker" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#60717D" }}>{getCategoryLabel(report.category)}</Text>
+              <Text style={{ color: "#31424E" }}>{report.description}</Text>
+              <AppButton theme="worker" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
+              <AppButton theme="worker" label="Prevzit profesionalni zasah" onPress={() => assignReport(report.id, user?.id ?? "", "in_progress")} />
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Žádné čekající profesionální zásahy.</Text>
+          <EmptyState theme="worker" title="Nic neceka" description="Zadne cekajici profesionalni zasahy." />
         )}
       </View>
+      </FadeInView>
 
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Moje zásahy</Text>
+      <FadeInView delay={180}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="worker">Moje zasahy</SectionTitle>
         {assignedReports.length > 0 ? (
           assignedReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>Status: {report.status}</Text>
-              <Text>Kategorie: {report.category}</Text>
+            <SurfaceCard key={report.id} theme="worker">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#17242D" }}>{report.title}</Text>}
+                right={<StatusBadge theme="worker" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#60717D" }}>{getCategoryLabel(report.category)}</Text>
+              <AppButton theme="worker" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
               {report.status === "in_progress" ? (
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "waiting_for_review")}
-                  style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text>Označit jako hotové</Text>
-                </Pressable>
+                <AppButton theme="worker" label="Oznacit jako hotove" onPress={() => updateReportStatus(report.id, "waiting_for_review")} />
               ) : null}
-            </View>
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Zatím nemáš žádný aktivní zásah.</Text>
+          <EmptyState theme="worker" title="Bez aktivniho zasahu" description="Zatim nemas zadny aktivni zasah." />
         )}
       </View>
+      </FadeInView>
 
-      <Pressable
-        onPress={() => {
-          logout();
-          router.replace("/(auth)/login");
-        }}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 14 }}
-      >
-        <Text>Odhlásit se</Text>
-      </Pressable>
-    </ScrollView>
+      <FadeInView delay={240}>
+        <AppButton
+          theme="worker"
+          variant="secondary"
+          label="Odhlasit se"
+          onPress={() => {
+            logout();
+            router.replace("/(auth)/login");
+          }}
+        />
+      </FadeInView>
+    </ScreenContainer>
   );
 }

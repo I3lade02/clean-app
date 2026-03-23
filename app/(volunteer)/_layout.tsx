@@ -1,5 +1,5 @@
 import { Redirect, Slot } from "expo-router";
-import { useAuthStore } from "@/src/store/auth.store";
+import { useAuthStore } from "../../src/store/auth.store";
 
 export default function VolunteerLayout() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

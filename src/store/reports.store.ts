@@ -1,5 +1,7 @@
 import { create } from "zustand";
-import { Report, ReportStatus } from "@/src/types/report";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createJSONStorage, persist } from "zustand/middleware";
+import { Report, ReportStatus } from "../types/report";
 
 type CreateReportInput = Omit<
     Report,
@@ -82,47 +84,55 @@ type ReportsState = {
     updateReportStatus: (id: string, status: ReportStatus) => void;
 };
 
-export const useReportsStore = create<ReportsState>((set, get) => ({
-    reports: initialReports,
-    createReport: (input) => {
-        const now = new Date().toISOString();
+export const useReportsStore = create<ReportsState>()(
+    persist(
+        (set, get) => ({
+            reports: initialReports,
+            createReport: (input) => {
+                const now = new Date().toISOString();
 
-        const newReport: Report = {
-            id: Math.random().toString(36).slice(2, 10),
-            status: "new",
-            createdAt: now,
-            updatedAt: now,
-            ...input,
-        };
+                const newReport: Report = {
+                    id: Math.random().toString(36).slice(2, 10),
+                    status: "new",
+                    createdAt: now,
+                    updatedAt: now,
+                    ...input,
+                };
 
-        set((state) => ({
-            reports: [newReport, ...state.reports],
-        }));
-    },
-    getReportById: (id) => get().reports.find((report) => report.id === id),
-    assignReport: (id, assignedTo, nextStatus) =>
-        set((state) => ({
-            reports: state.reports.map((report) =>
-                report.id === id
-                    ? {
-                        ...report,
-                        assignedTo,
-                        status: nextStatus,
-                        updatedAt: new Date().toISOString(),
-                    }
-                    : report,
-            ),
-        })),
-    updateReportStatus: (id, status) =>
-        set((state) => ({
-            reports: state.reports.map((report) =>
-                report.id === id
-                    ? {
-                        ...report,
-                        status,
-                        updatedAt: new Date().toISOString(),
-                    }
-                    : report,
-            ),
-        })),
-}));
+                set((state) => ({
+                    reports: [newReport, ...state.reports],
+                }));
+            },
+            getReportById: (id) => get().reports.find((report) => report.id === id),
+            assignReport: (id, assignedTo, nextStatus) =>
+                set((state) => ({
+                    reports: state.reports.map((report) =>
+                        report.id === id
+                            ? {
+                                ...report,
+                                assignedTo,
+                                status: nextStatus,
+                                updatedAt: new Date().toISOString(),
+                            }
+                            : report,
+                    ),
+                })),
+            updateReportStatus: (id, status) =>
+                set((state) => ({
+                    reports: state.reports.map((report) =>
+                        report.id === id
+                            ? {
+                                ...report,
+                                status,
+                                updatedAt: new Date().toISOString(),
+                            }
+                            : report,
+                    ),
+                })),
+        }),
+        {
+            name: "clean-app-reports",
+            storage: createJSONStorage(() => AsyncStorage),
+        },
+    ),
+);

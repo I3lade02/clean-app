@@ -1,7 +1,21 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
-import { useAuthStore } from "@/src/store/auth.store";
-import { useReportsStore } from "@/src/store/reports.store";
+import {
+  AppButton,
+  EmptyState,
+  FadeInView,
+  HeroCard,
+  MetaRow,
+  ScreenContainer,
+  SectionTitle,
+  StatCard,
+  StatGrid,
+  StatusBadge,
+  SurfaceCard,
+} from "../../src/components/ui";
+import { useAuthStore } from "../../src/store/auth.store";
+import { useReportsStore } from "../../src/store/reports.store";
+import { getCategoryLabel, getStatusLabel } from "../../src/lib/report-utils";
 
 export default function AdminScreen() {
   const user = useAuthStore((state) => state.user);
@@ -15,98 +29,91 @@ export default function AdminScreen() {
   const resolvedCount = reports.filter((report) => report.status === "resolved").length;
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }}>
-      <Text style={{ fontSize: 28, fontWeight: "700" }}>Dashboard admina</Text>
-      <Text>Přihlášený uživatel: {user?.name}</Text>
+    <ScreenContainer theme="admin">
+      <FadeInView>
+        <HeroCard
+          theme="admin"
+          eyebrow="Administracni panel"
+          title={user?.name ?? "Admin"}
+          description="Kontroluj prijem podnetu, schvalovani a finalni uzavirani zasahu."
+        />
+      </FadeInView>
+      <FadeInView delay={60}>
+        <StatGrid>
+          <StatCard theme="admin" label="Nova hlaseni" value={newReports.length} />
+          <StatCard theme="admin" label="Schvalena" value={approvedCount} />
+          <StatCard theme="admin" label="Uzavrena" value={resolvedCount} />
+        </StatGrid>
+      </FadeInView>
 
-      <View style={{ flexDirection: "row", gap: 12 }}>
-        <View style={{ flex: 1, borderWidth: 1, borderRadius: 12, padding: 14, gap: 6 }}>
-          <Text style={{ fontWeight: "700" }}>Nová hlášení</Text>
-          <Text>{newReports.length}</Text>
-        </View>
-        <View style={{ flex: 1, borderWidth: 1, borderRadius: 12, padding: 14, gap: 6 }}>
-          <Text style={{ fontWeight: "700" }}>Schválená</Text>
-          <Text>{approvedCount}</Text>
-        </View>
-        <View style={{ flex: 1, borderWidth: 1, borderRadius: 12, padding: 14, gap: 6 }}>
-          <Text style={{ fontWeight: "700" }}>Uzavřená</Text>
-          <Text>{resolvedCount}</Text>
-        </View>
-      </View>
-
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Ke schválení</Text>
+      <FadeInView delay={120}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="admin">Ke schvaleni</SectionTitle>
         {newReports.length > 0 ? (
           newReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>{report.description}</Text>
-              <Text>Kategorie: {report.category}</Text>
+            <SurfaceCard key={report.id} theme="admin">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#211A43" }}>{report.title}</Text>}
+                right={<StatusBadge theme="admin" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#645C84" }}>{getCategoryLabel(report.category)}</Text>
+              <Text style={{ color: "#3A3550" }}>{report.description}</Text>
+              <AppButton theme="admin" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "approved")}
-                  style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text style={{ textAlign: "center" }}>Schválit</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "rejected")}
-                  style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text style={{ textAlign: "center" }}>Zamítnout</Text>
-                </Pressable>
+                <View style={{ flex: 1 }}>
+                  <AppButton theme="admin" label="Schvalit" onPress={() => updateReportStatus(report.id, "approved")} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <AppButton theme="admin" variant="secondary" label="Zamitnout" onPress={() => updateReportStatus(report.id, "rejected")} />
+                </View>
               </View>
-            </View>
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Žádná nová hlášení ke schválení.</Text>
+          <EmptyState theme="admin" title="Fronta je prazdna" description="Zadna nova hlaseni ke schvaleni." />
         )}
       </View>
+      </FadeInView>
 
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Čeká na kontrolu po zásahu</Text>
+      <FadeInView delay={180}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="admin">Ceka na kontrolu po zasahu</SectionTitle>
         {reviewReports.length > 0 ? (
           reviewReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>Status: {report.status}</Text>
-              <Text>Přiřazeno: {report.assignedTo ?? "nepřiřazeno"}</Text>
+            <SurfaceCard key={report.id} theme="admin">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#211A43" }}>{report.title}</Text>}
+                right={<StatusBadge theme="admin" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#645C84" }}>Prirazeno: {report.assignedTo ?? "neprirazeno"}</Text>
+              <AppButton theme="admin" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
               <View style={{ flexDirection: "row", gap: 10 }}>
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "resolved")}
-                  style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text style={{ textAlign: "center" }}>Uzavřít</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "approved")}
-                  style={{ flex: 1, borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text style={{ textAlign: "center" }}>Vrátit do fronty</Text>
-                </Pressable>
+                <View style={{ flex: 1 }}>
+                  <AppButton theme="admin" label="Uzavrit" onPress={() => updateReportStatus(report.id, "resolved")} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <AppButton theme="admin" variant="secondary" label="Vratit do fronty" onPress={() => updateReportStatus(report.id, "approved")} />
+                </View>
               </View>
-            </View>
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Momentálně nic nečeká na kontrolu.</Text>
+          <EmptyState theme="admin" title="Bez cekajicich kontrol" description="Momentalne nic neceka na kontrolu." />
         )}
       </View>
+      </FadeInView>
 
-      <Pressable
-        onPress={() => {
-          logout();
-          router.replace("/(auth)/login");
-        }}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 14 }}
-      >
-        <Text>Odhlásit se</Text>
-      </Pressable>
-    </ScrollView>
+      <FadeInView delay={240}>
+        <AppButton
+          theme="admin"
+          variant="secondary"
+          label="Odhlasit se"
+          onPress={() => {
+            logout();
+            router.replace("/(auth)/login");
+          }}
+        />
+      </FadeInView>
+    </ScreenContainer>
   );
 }

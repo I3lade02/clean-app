@@ -1,7 +1,21 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { router } from "expo-router";
-import { useAuthStore } from "@/src/store/auth.store";
-import { useReportsStore } from "@/src/store/reports.store";
+import {
+  AppButton,
+  EmptyState,
+  FadeInView,
+  HeroCard,
+  MetaRow,
+  ScreenContainer,
+  SectionTitle,
+  StatCard,
+  StatGrid,
+  StatusBadge,
+  SurfaceCard,
+} from "../../src/components/ui";
+import { useAuthStore } from "../../src/store/auth.store";
+import { useReportsStore } from "../../src/store/reports.store";
+import { getCategoryLabel, getStatusLabel } from "../../src/lib/report-utils";
 
 export default function VolunteerScreen() {
   const user = useAuthStore((state) => state.user);
@@ -20,78 +34,81 @@ export default function VolunteerScreen() {
   );
 
   return (
-    <ScrollView contentContainerStyle={{ padding: 24, gap: 20 }}>
-      <Text style={{ fontSize: 28, fontWeight: "700" }}>Dashboard dobrovolníka</Text>
-      <Text>Přihlášený uživatel: {user?.name}</Text>
-      <Text>Dostupné body: {user?.points ?? 0}</Text>
+    <ScreenContainer theme="volunteer">
+      <FadeInView>
+        <HeroCard
+          theme="volunteer"
+          eyebrow="Dobrovolnicky panel"
+          title={user?.name ?? "Dobrovolnik"}
+          description={`Mas ${availableReports.length} volnych akci a ${assignedReports.length} aktivnich ukolu.`}
+        />
+      </FadeInView>
+      <FadeInView delay={60}>
+        <StatGrid>
+          <StatCard theme="volunteer" label="Body" value={user?.points ?? 0} />
+          <StatCard theme="volunteer" label="Aktivni ukoly" value={assignedReports.length} />
+        </StatGrid>
+      </FadeInView>
 
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Volná hlášení k převzetí</Text>
+      <FadeInView delay={120}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="volunteer">Volna hlaseni k prevzeti</SectionTitle>
         {availableReports.length > 0 ? (
           availableReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>{report.description}</Text>
-              <Text>Kategorie: {report.category}</Text>
-              <Pressable
-                onPress={() => assignReport(report.id, user?.id ?? "", "assigned_volunteer")}
-                style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-              >
-                <Text>Převzít hlášení</Text>
-              </Pressable>
-            </View>
+            <SurfaceCard key={report.id} theme="volunteer">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#382B1F" }}>{report.title}</Text>}
+                right={<StatusBadge theme="volunteer" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#7A654E" }}>{getCategoryLabel(report.category)}</Text>
+              <Text style={{ color: "#4D3E2E" }}>{report.description}</Text>
+              <AppButton theme="volunteer" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
+              <AppButton theme="volunteer" label="Prevzit hlaseni" onPress={() => assignReport(report.id, user?.id ?? "", "assigned_volunteer")} />
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Teď není nic volného pro dobrovolníky.</Text>
+          <EmptyState theme="volunteer" title="Nic neni volne" description="Ted neni nic volneho pro dobrovolniky." />
         )}
       </View>
+      </FadeInView>
 
-      <View style={{ gap: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: "600" }}>Moje aktivní úkoly</Text>
+      <FadeInView delay={180}>
+        <View style={{ gap: 12 }}>
+          <SectionTitle theme="volunteer">Moje aktivni ukoly</SectionTitle>
         {assignedReports.length > 0 ? (
           assignedReports.map((report) => (
-            <View
-              key={report.id}
-              style={{ borderWidth: 1, borderRadius: 12, padding: 14, gap: 8 }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: "700" }}>{report.title}</Text>
-              <Text>Status: {report.status}</Text>
-              <Text>Kategorie: {report.category}</Text>
+            <SurfaceCard key={report.id} theme="volunteer">
+              <MetaRow
+                left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#382B1F" }}>{report.title}</Text>}
+                right={<StatusBadge theme="volunteer" label={getStatusLabel(report.status)} />}
+              />
+              <Text style={{ color: "#7A654E" }}>{getCategoryLabel(report.category)}</Text>
+              <AppButton theme="volunteer" variant="secondary" label="Otevrit detail" onPress={() => router.push(`/report/${report.id}`)} />
               {report.status === "assigned_volunteer" ? (
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "in_progress")}
-                  style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text>Zahájit úklid</Text>
-                </Pressable>
+                <AppButton theme="volunteer" label="Zahajit uklid" onPress={() => updateReportStatus(report.id, "in_progress")} />
               ) : null}
               {report.status === "in_progress" ? (
-                <Pressable
-                  onPress={() => updateReportStatus(report.id, "waiting_for_review")}
-                  style={{ borderWidth: 1, borderRadius: 10, padding: 12 }}
-                >
-                  <Text>Odeslat ke kontrole</Text>
-                </Pressable>
+                <AppButton theme="volunteer" label="Odeslat ke kontrole" onPress={() => updateReportStatus(report.id, "waiting_for_review")} />
               ) : null}
-            </View>
+            </SurfaceCard>
           ))
         ) : (
-          <Text>Zatím nemáš žádné převzaté hlášení.</Text>
+          <EmptyState theme="volunteer" title="Zatim bez ukolu" description="Zatim nemas zadne prevzate hlaseni." />
         )}
       </View>
+      </FadeInView>
 
-      <Pressable
-        onPress={() => {
-          logout();
-          router.replace("/(auth)/login");
-        }}
-        style={{ borderWidth: 1, borderRadius: 12, padding: 14 }}
-      >
-        <Text>Odhlásit se</Text>
-      </Pressable>
-    </ScrollView>
+      <FadeInView delay={240}>
+        <AppButton
+          theme="volunteer"
+          variant="secondary"
+          label="Odhlasit se"
+          onPress={() => {
+            logout();
+            router.replace("/(auth)/login");
+          }}
+        />
+      </FadeInView>
+    </ScreenContainer>
   );
 }
