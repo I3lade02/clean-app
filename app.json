@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "clean-app",
+    "slug": "clean-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "scheme": "cleancity",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {},
+    "plugins": [
+      "expo-router",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Aplikace potrebuje polohu pro oznaceni znecisteneho mista"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Aplikace potrebuje kameru pro foceni hlaseni"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplikace potrebuje pristup k fotkam pro nahrani dokumentace"
+        }
+      ]
+    ]
+  }
+}
