@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { requireOptionalNativeModule } from "expo-modules-core";
 import {
   Alert,
   Image,
+  Platform,
   Pressable,
   Text,
   TextInput,
@@ -30,6 +32,10 @@ const categories: ReportCategory[] = [
   "other",
 ];
 
+function hasRuntimeModule(moduleName: string) {
+  return Platform.OS === "web" || requireOptionalNativeModule(moduleName) !== null;
+}
+
 export default function ReportCreateScreen() {
   const user = useAuthStore((s) => s.user);
   const createReport = useReportsStore((s) => s.createReport);
@@ -46,6 +52,14 @@ export default function ReportCreateScreen() {
   const handlePickImage = async () => {
     try {
       setIsPickingImage(true);
+
+      if (!hasRuntimeModule("ExponentImagePicker")) {
+        Alert.alert(
+          "Modul chybi v aplikaci",
+          "Aktualni klient neobsahuje expo-image-picker. Pokud pouzivas development build, znovu ho sestav po instalaci nativnich modulu. V Expo Go pouzij verzi odpovidajici SDK 55.",
+        );
+        return;
+      }
 
       const ImagePicker = await import("expo-image-picker");
 
@@ -85,6 +99,14 @@ export default function ReportCreateScreen() {
   const handleUseCurrentLocation = async () => {
     try {
       setIsFetchingLocation(true);
+
+      if (!hasRuntimeModule("ExpoLocation")) {
+        Alert.alert(
+          "Modul chybi v aplikaci",
+          "Aktualni klient neobsahuje expo-location. Pokud pouzivas development build, znovu ho sestav po pridani nativnich modulu.",
+        );
+        return;
+      }
 
       const Location = await import("expo-location");
 
@@ -137,7 +159,6 @@ export default function ReportCreateScreen() {
       createdBy: user.id,
       images,
       location,
-      assignedTo: undefined,
     });
 
     Alert.alert("Hotovo", "Hlášení bylo vytvořeno.");

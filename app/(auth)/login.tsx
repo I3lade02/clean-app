@@ -1,6 +1,7 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import { Link, router } from "expo-router";
 import { useState } from "react";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../src/store/auth.store";
 import { loginSchema } from "../../src/lib/schemas";
 
@@ -42,7 +43,9 @@ export default function LoginScreen() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#F4F8F6" }}>
+    <SafeAreaView
+      style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#F4F8F6" }}
+    >
       <View
         style={{
           borderRadius: 24,
@@ -110,6 +113,6 @@ export default function LoginScreen() {
           Nemam ucet
         </Link>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

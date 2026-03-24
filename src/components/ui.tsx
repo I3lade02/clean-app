@@ -8,6 +8,7 @@ import {
   useWindowDimensions,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { appTheme, ThemeKey } from "../lib/theme";
 
 export function ScreenContainer({
@@ -16,17 +17,22 @@ export function ScreenContainer({
 }: PropsWithChildren<{ theme: ThemeKey }>) {
   const { width } = useWindowDimensions();
   const padding = width < 380 ? 16 : appTheme.spacing.screen;
+  const backgroundColor = appTheme.colors[theme].bg;
 
   return (
-    <ScrollView
-      contentContainerStyle={{
-        padding,
-        gap: appTheme.spacing.section,
-        backgroundColor: appTheme.colors[theme].bg,
-      }}
-    >
-      {children}
-    </ScrollView>
+    <SafeAreaView style={{ flex: 1, backgroundColor }}>
+      <ScrollView
+        style={{ flex: 1, backgroundColor }}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={{
+          flexGrow: 1,
+          padding,
+          gap: appTheme.spacing.section,
+        }}
+      >
+        {children}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -253,7 +259,7 @@ export function LoadingScreen({
   label?: string;
 }) {
   return (
-    <View
+    <SafeAreaView
       style={{
         flex: 1,
         justifyContent: "center",
@@ -265,7 +271,7 @@ export function LoadingScreen({
     >
       <ActivityIndicator size="large" color="#1C7C54" />
       <Text style={{ color: "#24332B", fontWeight: "600" }}>{label}</Text>
-    </View>
+    </SafeAreaView>
   );
 }
 

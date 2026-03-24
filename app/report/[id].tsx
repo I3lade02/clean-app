@@ -1,10 +1,10 @@
-import { Redirect, Stack, useLocalSearchParams } from "expo-router";
+import { Redirect, Stack, router, useLocalSearchParams } from "expo-router";
 import { Image, ScrollView, Text, View } from "react-native";
 import {
   AppButton,
+  EmptyState,
   FadeInView,
   HeroCard,
-  LoadingScreen,
   MetaRow,
   ScreenContainer,
   StatusBadge,
@@ -29,10 +29,6 @@ export default function SharedReportDetailScreen() {
     return <Redirect href="/(auth)/login" />;
   }
 
-  if (!report) {
-    return <LoadingScreen label="Hlaseni nebylo nalezeno." />;
-  }
-
   const detailTheme =
     user?.role === "admin"
       ? "admin"
@@ -41,6 +37,56 @@ export default function SharedReportDetailScreen() {
         : user?.role === "volunteer"
           ? "volunteer"
           : "citizen";
+
+  if (!report) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: true, title: "Detail hlaseni" }} />
+        <ScreenContainer theme={detailTheme}>
+          <FadeInView>
+            <EmptyState
+              theme={detailTheme}
+              title="Hlaseni nebylo nalezeno"
+              description="Pozadovany zaznam uz neexistuje nebo pro nej nemas dostupna data."
+            />
+          </FadeInView>
+          <FadeInView delay={80}>
+            <AppButton
+              theme={detailTheme}
+              variant="secondary"
+              label="Zpet na prehled"
+              onPress={() => router.replace("/")}
+            />
+          </FadeInView>
+        </ScreenContainer>
+      </>
+    );
+  }
+
+  if (user?.role === "citizen" && report.createdBy !== user.id) {
+    return (
+      <>
+        <Stack.Screen options={{ headerShown: true, title: "Detail hlaseni" }} />
+        <ScreenContainer theme="citizen">
+          <FadeInView>
+            <EmptyState
+              theme="citizen"
+              title="K tomuto hlaseni nemas pristup"
+              description="Obcansky ucet muze otevrit jen vlastni hlaseni, ne podnety ostatnich uzivatelu."
+            />
+          </FadeInView>
+          <FadeInView delay={80}>
+            <AppButton
+              theme="citizen"
+              variant="secondary"
+              label="Zpet na moje hlaseni"
+              onPress={() => router.replace("/(citizen)/my-reports")}
+            />
+          </FadeInView>
+        </ScreenContainer>
+      </>
+    );
+  }
 
   const canVolunteerClaim =
     user?.role === "volunteer" &&

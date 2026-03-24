@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Link, router } from "expo-router";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "../../src/store/auth.store";
 import { registerSchema } from "../../src/lib/schemas";
 
@@ -40,7 +41,9 @@ export default function RegisterScreen() {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#F4F8F6" }}>
+    <SafeAreaView
+      style={{ flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#F4F8F6" }}
+    >
       <View
         style={{
           borderRadius: 24,
@@ -103,6 +106,6 @@ export default function RegisterScreen() {
           Uz mam ucet
         </Link>
       </View>
-    </View>
+    </SafeAreaView>
   );
 }

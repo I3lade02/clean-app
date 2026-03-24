@@ -7,8 +7,10 @@ type AuthState = {
   token: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  hasHydrated: boolean;
   login: (payload: { token: string; user: User }) => void;
   logout: () => void;
+  setHasHydrated: (hasHydrated: boolean) => void;
 };
 
 export const useAuthStore = create<AuthState>()(
@@ -17,6 +19,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       isAuthenticated: false,
+      hasHydrated: false,
       login: ({ token, user }) =>
         set({
           token,
@@ -29,10 +32,22 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           isAuthenticated: false,
         }),
+      setHasHydrated: (hasHydrated) =>
+        set({
+          hasHydrated,
+        }),
     }),
     {
       name: "clean-app-auth",
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        token: state.token,
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     },
   ),
 );

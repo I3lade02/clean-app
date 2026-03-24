@@ -1,4 +1,4 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { router } from "expo-router";
 import {
   EmptyState,
@@ -35,10 +35,8 @@ export default function MyReportsScreen() {
         myReports.map((report, index) => (
           <FadeInView key={report.id} delay={40 * (index + 1)}>
             <Pressable
-            key={report.id}
-            onPress={() => router.push(`/report/${report.id}`)}
-            style={{}}
-          >
+              onPress={() => router.push(`/report/${report.id}`)}
+            >
               <SurfaceCard theme="citizen">
                 <MetaRow
                   left={<Text style={{ fontSize: 18, fontWeight: "700", color: "#122018" }}>{report.title}</Text>}
