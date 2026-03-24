@@ -2,11 +2,12 @@ import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createJSONStorage, persist } from "zustand/middleware";
 import { Report, ReportStatus } from "../types/report";
-
-type CreateReportInput = Omit<
-  Report,
-  "id" | "createdAt" | "updatedAt" | "status" | "assignedTo"
->;
+import {
+  assignReport as assignReportRecord,
+  CreateReportInput,
+  createReport as createReportRecord,
+  transitionReportStatus,
+} from "../lib/report-workflow";
 
 const initialReports: Report[] = [
   {
@@ -92,66 +93,30 @@ export const useReportsStore = create<ReportsState>()(
       reports: initialReports,
       hasHydrated: false,
       createReport: (input) => {
-        const now = new Date().toISOString();
-
-        const newReport: Report = {
-          id: Math.random().toString(36).slice(2, 10),
-          status: "new",
-          createdAt: now,
-          updatedAt: now,
-          ...input,
-        };
-
         set((state) => ({
-          reports: [newReport, ...state.reports],
+          reports: [createReportRecord(input), ...state.reports],
         }));
       },
       getReportById: (id) => get().reports.find((report) => report.id === id),
       assignReport: (id, assignedTo, nextStatus) => {
-        const nextAssignee = assignedTo.trim();
-
-        if (!nextAssignee) {
-          return;
-        }
-
         set((state) => {
-          const now = new Date().toISOString();
-
           return {
             reports: state.reports.map((report) => {
-              if (report.id !== id || report.status !== "approved") {
+              if (report.id !== id) {
                 return report;
               }
 
-              if (report.assignedTo && report.assignedTo !== nextAssignee) {
-                return report;
-              }
-
-              return {
-                ...report,
-                assignedTo: nextAssignee,
-                status: nextStatus,
-                updatedAt: now,
-              };
+              return assignReportRecord(report, assignedTo, nextStatus);
             }),
           };
         });
       },
       updateReportStatus: (id, status) =>
         set((state) => {
-          const now = new Date().toISOString();
-          const shouldClearAssignment =
-            status === "new" || status === "approved" || status === "rejected";
-
           return {
             reports: state.reports.map((report) =>
               report.id === id
-                ? {
-                    ...report,
-                    status,
-                    assignedTo: shouldClearAssignment ? undefined : report.assignedTo,
-                    updatedAt: now,
-                  }
+                ? transitionReportStatus(report, status)
                 : report,
             ),
           };

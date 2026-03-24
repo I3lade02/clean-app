@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "rootDir": ".",
+    "outDir": ".test-dist",
+    "types": ["node"],
+    "noEmit": false,
+    "isolatedModules": false,
+    "skipLibCheck": true
+  },
+  "include": ["src/lib/report-workflow.ts", "src/types/report.ts", "tests/**/*.ts"]
+}
